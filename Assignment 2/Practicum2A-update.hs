@@ -2,16 +2,23 @@
 module Practicum2A where
 
 {-
-Name:           <Name and family name>
-VU-net id:      <VU-net id>
-Student number: <Student number>
-Discussed with: <In case you discussed the exercises with someone else,
-                 please mention his/her name(s) explicitly here>
-Remarks:        <In case something need special attention,
-                 please tell us>
+Name:           <Andrea Di Dio>
+VU-net id:      <ado380>
+Student number: <2593888>
+Discussed with: <>
+Remarks:        <>
 Sources:        https://wiki.haskell.org/99_questions/Solutions/39
-
--}
+                http://learnyouahaskell.com/zippers
+                https://dkalemis.wordpress.com/2014/01/23/trees-in-haskell/
+                https://stackoverflow.com/questions/21202010/implementing-binary-search-tree-insertion-in-haskell
+                https://stackoverflow.com/questions/6462749/church-numerals-in-haskell
+                https://www.mjoldfield.com/atelier/2011/01/church-numerals.html
+                https://karczmarczuk.users.greyc.fr/Essays/church.html
+                http://learnyouahaskell.com/syntax-in-functions
+                https://wiki.haskell.org/Let_vs._Where
+                http://zvon.org/other/haskell/Outputsyntax/letQexpressions_reference.html
+                https://stackoverflow.com/questions/40836222/haskell-guard-inside-case-statement
+                -}
 
 ----------------------------
 -- Exercise Tower of Hanoi
@@ -252,27 +259,81 @@ treemap func n =
 
 -- Exercise 1
 smallerthan :: (Ord a) => a -> BinaryTree a -> Bool
-smallerthan = undefined
+smallerthan l n =
+  case n of
+    Leaf -> True
+    (Node x y z) | l < y -> False
+                 | l > y -> smallerthan l z
+                 | otherwise -> False
+-- smallerthan 4 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == True
+-- smallerthan 0 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == False
 
 largerthan :: (Ord a) => a -> BinaryTree a -> Bool
-largerthan = undefined
+largerthan l n = 
+  case n of
+    Leaf -> True
+    (Node x y z) | l > y -> False
+                 | l < y -> largerthan l x
+                 | otherwise -> False
+-- largerthan largerthan 0 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == False
+-- largerthan 0 (Node (Node Leaf 4 Leaf) 1 (Node Leaf 2 Leaf)) == True
 
 -- Exercise 2
 isbinarysearchtree :: (Ord a) => BinaryTree a -> Bool
-isbinarysearchtree = undefined
+isbinarysearchtree  n = 
+  case n of 
+    Leaf -> True
+    (Node x y z) | (smallerthan y x) && (largerthan y z)
+                   && (isbinarysearchtree z) 
+                   && (isbinarysearchtree x) -> True
+                 | otherwise -> False
+-- isbinarysearchtree (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == True
+-- isbinarysearchtree (Node (Node Leaf 0 Leaf) 3 (Node Leaf 2 Leaf)) == False
 
 -- Exercise 3
 iselement :: (Ord a, Eq a) => a -> BinaryTree a -> Bool
-iselement = undefined
+iselement l n = 
+  case n of 
+    Leaf -> False
+    (Node x y z) | l == y -> True
+                 | otherwise -> ((iselement l z) || (iselement l x))
+-- iselement 4 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == False
+-- iselement 2 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == True
 
 -- Exercise 4
 insert :: (Ord a, Eq a) => a -> BinaryTree a -> BinaryTree a
-insert = undefined
+insert l n = 
+  case n of
+    Leaf -> (single l)
+    (Node x y z) | iselement l n -> (Node x y z)
+                 | l < y -> (Node (insert l x) y z)
+                 | otherwise -> (Node x y (insert l z))
+-- insert 4 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf))
+--            == Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 (Node Leaf 4 Leaf))
+-- insert 0 (Node (Node Leaf 1 Leaf) 2 (Node Leaf 3 Leaf))
+--            == Node (Node (Node Leaf 0 Leaf) 1 Leaf) 2 (Node Leaf 3 Leaf)
+-- insert 0 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf))
+--            == Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)
 
 -- Exercise 5
 createbinarysearchtree :: (Ord a, Eq a) => [a] -> BinaryTree a
-createbinarysearchtree = undefined
+createbinarysearchtree n =
+  case n of 
+    (h:t) | length n == 1 -> (Node Leaf h Leaf)
+          | otherwise -> (insert h (createbinarysearchtree t))
+-- createbinarysearchtree [1] == Node Leaf 1 Leaf
+-- createbinarysearchtree [1,2,3,4,0] == Node Leaf 0 (Node (Node (Node (Node Leaf 1 Leaf) 2 Leaf) 3 Leaf) 4 Leaf)
+-- createbinarysearchtree [1,2,3,4,0,2,3] == Node Leaf 0 (Node (Node (Node (Node Leaf 1 Leaf) 2 Leaf) 3 Leaf) 4 Leaf)
 
 -- Exercise 6
 remove :: (Ord a, Eq a) => a -> BinaryTree a -> BinaryTree a
-remove = undefined
+remove l n =
+  case n of
+    Leaf -> Leaf
+    (Node x y z) | iselement l n == False -> n
+                 | otherwise -> 
+                      let toList = flatten n
+                        in createbinarysearchtree (filter (\u -> u /= l) (toList))
+-- remove 0 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == Node (Node Leaf 1 Leaf) 2 Leaf
+-- remove 4 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)
+-- remove 1 (Node (Node Leaf 0 Leaf) 1 (Node Leaf 2 Leaf)) == Node (Node Leaf 0 Leaf) 2 Leaf
