@@ -8,8 +8,21 @@ Discussed with: <In case you discussed the exercises with someone else,
                  please mention his/her name(s) explicitly here>
 Remarks:        <In case something need special attention,
                  please tell us>
-Sources:        <in case you used sources such as books or webpages
-                 please mention them here>
+Sources:        <
+                https://stackoverflow.com/questions/44965/what-is-a-monad
+                https://wiki.haskell.org/Monad
+                https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/guide-to-ghc-extensions/pattern-and-guard-extensions
+                https://wiki.haskell.org/MultiCase
+                https://en.wikibooks.org/wiki/Haskell/Control_structures
+                http://learnyouahaskell.com/a-fistful-of-monads
+                https://en.wikibooks.org/wiki/Haskell/Understanding_monads
+                https://cs.stackexchange.com/questions/27808/haskell-monad-bind-operator-type
+                https://en.wikibooks.org/wiki/Haskell/do_notation
+                https://stackoverflow.com/questions/48177824/how-does-return-statement-work-in-haskell
+                https://blog.ramdoot.in/monadic-do-block-yet-again-a98cf0237b25
+                http://www.haskellforall.com/2014/10/how-to-desugar-haskell-code.html
+                http://book.realworldhaskell.org/read/monads.html
+                >
 -}
 
 import Control.Applicative (Applicative(..))
@@ -42,11 +55,28 @@ myDividedBy n d =
 
 -- Exercise 1-a
 myIndexOf :: [Double] -> Double -> MaybeOne Int
-myIndexOf l n = undefined
+myIndexOf l n =
+  myIndexOfAux l 1
+  where
+    myIndexOfAux l i =
+      case l of
+        [] -> NoResult
+        (h:t) -> if (h /= n) then myIndexOfAux t (i + 1) else Result (i)  
+-- myIndexOf [4,5,6,7,6,7,6] 6 == Result 3
+-- myIndexOf [1,2,3] == NoResult
 
 -- Exercise 1-b
 myRemainderString :: String -> String -> MaybeOne String
-myRemainderString x y = undefined
+myRemainderString x y = 
+  case x of
+    [] -> Result (y)
+    (h:t) | length y == 0 -> NoResult
+          | let prefix = (take (length x) y)
+              in prefix == x -> Result (drop (length x) y)
+          | otherwise -> NoResult 
+-- myRemainderString "abc" "abcd" == Result "d"
+-- myRemainderString "abc" "accd" == NoResult
+-- myRemainderString "abc" "lalabcd" == NoResult
 
 -- Create an operator for our divide function
 n // d = n `myDividedBy` d
@@ -88,7 +118,27 @@ g x y z s =
 
 -- Exercise 2
 v1 :: Double -> Double -> Double -> Double -> MaybeOne Double
-v1 x y z s = undefined
+v1 x y z s = 
+  case x // y of
+    NoResult -> NoResult
+    Result xDividedByy ->
+      case z // s of
+        NoResult -> NoResult
+        Result zDividedBys ->
+          case y // s of
+            NoResult -> NoResult
+            Result yDividedBys ->
+              case z // x of
+                NoResult -> NoResult
+                Result zDividedByx ->
+                  case (xDividedByy) // (zDividedBys - yDividedBys) of
+                    NoResult -> NoResult
+                    Result leftOperand ->
+                      let rightOperand = (yDividedBys + zDividedByx)
+                        in Result (leftOperand - rightOperand)
+-- v1 1 2 3 4 == Result (-1.5)
+-- v1 3 3 3 3 == NoResult
+-- v1 2 5 1 5 == Result (-2.0)
 
 -- Example f using >==
 fBetter :: Double -> Double -> Double -> MaybeOne Double
@@ -120,7 +170,27 @@ gBetter x y z s =
 
 -- Exercise 3
 v2 :: Double -> Double -> Double -> Double -> MaybeOne Double
-v2 x y z s = undefined
+v2 x y z s = 
+  (x // y) >>=
+    (\xDividedByy -> 
+      (z // s) >>=
+      (\zDividedBys -> 
+        (y // s) >>=
+        (\yDividedBys -> 
+          (z // x) >>=
+          (\zDividedByx -> 
+            ((xDividedByy) // (zDividedBys - yDividedBys) >>=
+              (\leftOperand -> let rightOperand = (yDividedBys + zDividedByx)
+                                  in Result (leftOperand - rightOperand)
+              )
+            )
+          )
+        )
+      )
+    )
+-- v2 1 2 3 4 == Result (-1.5)
+-- v2 3 3 3 3 == NoResult
+-- v2 2 5 1 5 == Result (-2.0)
 
 -- Example f using do
 fDo :: Double -> Double -> Double -> MaybeOne Double
@@ -160,5 +230,15 @@ gPerfect x y z s = do
 
 -- Exercise 4
 v3 :: Double -> Double -> Double -> Double -> MaybeOne Double
-v3 x y z s = undefined
-
+v3 x y z s = do
+  xDividedByy <- (x // y)
+  zDividedBys <- (z // s)
+  yDividedBys <- (y // s)
+  zDividedByx <- (z // x)
+  leftOperand <- (xDividedByy) // (zDividedBys - yDividedBys)
+  rightOperand <- Result (yDividedBys + zDividedByx)
+  let result = (leftOperand - rightOperand)
+  return result
+-- v3 1 2 3 4 == Result (-1.5)
+-- v3 3 3 3 3 == NoResult
+-- v3 2 5 1 5 == Result (-2.0)
