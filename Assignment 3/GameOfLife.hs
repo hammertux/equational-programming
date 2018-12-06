@@ -43,12 +43,16 @@ defaultOptions  = Options
 -- | Algorithm implementation
 
 nextGeneration :: World -> World
-nextGeneration w = undefined
+nextGeneration w = aliveCells w
 
 -- | Helper functions
+
 deadCells :: World -> World
-deadCells w = undefined
-     
+deadCells w =  (S.filter (\c -> neighborCountIn c w /= 3) w)
+
+aliveCells :: World -> World
+aliveCells w = S.union (S.difference w (deadCells w))
+                       (S.filter (\c -> neighborCountIn c w == 3) w)     
 
 neighborCountIn :: Cell -> World -> Int
 neighborCountIn c w = size
