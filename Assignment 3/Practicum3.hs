@@ -8,8 +8,13 @@ Discussed with: <In case you discussed the exercises with someone else,
                  please mention his/her name(s) explicitly here>
 Remarks:        <In case something need special attention,
                  please tell us>
-Sources:        <in case you used sources such as books or webpages
-                 please mention them here>
+Sources:        http://learnyouahaskell.com/making-our-own-types-and-typeclasses
+                https://wiki.haskell.org/Combinatory_logic
+                https://wiki.haskell.org/Combinator
+                http://brandon.si/code/designing-a-module-for-combinatory-logic-in-haskell/
+                http://lambda-the-ultimate.org/node/3719
+                http://hackage.haskell.org/package/base-4.12.0.0/docs/Text-Show.html
+                https://www.haskell.org/tutorial/stdclasses.html
 -}
 
 -- Exercises Arithmetical Expressions
